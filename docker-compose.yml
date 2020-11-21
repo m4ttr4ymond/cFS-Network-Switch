@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  web:
+    image: m4ttr4ymond/cfs-server
+    build: .
+    ports:
+      - "8888:8080"
+    stdin_open: true
+    tty: true
