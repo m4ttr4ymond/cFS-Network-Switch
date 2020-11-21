@@ -1,0 +1,13 @@
+{
+  "name": "cfs_network_switch",
+  "version": "1.0.0",
+  "description": "TDB",
+  "author": "Matt Raymond <m4ttr4ymon@gmail.com>",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.16.1"
+  }
+}
