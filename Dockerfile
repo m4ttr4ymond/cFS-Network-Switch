@@ -15,5 +15,6 @@ RUN npm install pm2 -g
 
 # http
 EXPOSE 8080
+EXPOSE 8081
 
 CMD pm2 --name "cFS Server" --cwd /srv/webapp start npm  -- start && pm2 log
