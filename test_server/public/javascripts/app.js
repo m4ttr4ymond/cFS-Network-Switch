@@ -1,13 +1,11 @@
-import { trace } from "../../routes";
 
-export default class EditingWindow extends React.Component {
+class EditingWindow extends React.Component {
     socket;
 
     constructor(props) {
         super(props);
 
         this.socket = this.props.socket
-
         this.state = {
             client: []
         };
@@ -16,26 +14,74 @@ export default class EditingWindow extends React.Component {
             // this.setState(data);
 
             this.setState({
-                client: data
+                client: data,
+                showSnackbar: false
+            });
+        });
+
+        this.socket.on('update', data => {
+            let new_client = this.state.client;
+            let found = false;
+
+            for (let i = 0; i < new_client.length; i++) {
+                if(new_client[i].client == data.client) {
+                    new_client[i].messages.push(data.message);
+                    found = true;
+                    break;
+                }
+            }
+
+            if(!found) {
+                new_client.push({
+                    client: data.client,
+                    messages: [
+                        data.message
+                    ]
+                });
+            }
+            this.setState({
+                client: new_client,
+                showSnackbar: this.state.showSnackbar,
+                snackbarMessage: this.state.snackbarMessage
+            });
+        });
+
+        this.socket.on('state_sent', data => {
+            console.log('here');
+            this.setState({
+                client: this.state.client,
+                showSnackbar: true,
+                snackbarMessage: data.result ? 'success' : 'failure'
             });
         });
     }
 
-    onChange(socket, dest_id, source_id, time_sent) {
-        socket.emit('send_state_init', {
-            dest_id: dest_id,
-            source_id: source_id,
-            time_sent: time_sent
+    onAnimationEnd(target) {
+        target.setState({
+            client: this.state.client,
+            showSnackbar: false,
+            snackbarMessage: this.state.snackbarMessage
         });
+    }
 
-        console.log('sent state');
+    onChange(socket, dest_id, source_id, time_sent) {
+        
+
+        if(dest_id.toLowerCase() != 'none') {
+            socket.emit('send_state_init', {
+                dest_id: dest_id,
+                source_id: source_id,
+                time_sent: time_sent
+            });
+        }
     }
 
     render() {
         return (
-            <div>
+            <div className='center'>
                 <h1>cFS Network Switch</h1>
                 <Table clients={this.state.client} onChange={(d, s, t) => this.onChange(this.socket, d, s, t)}/>
+                <Snackbar isActive={this.state.showSnackbar} message={this.state.snackbarMessage} callback={() => this.onAnimationEnd(this)}></Snackbar>
             </div>
         );
     }
@@ -44,7 +90,11 @@ export default class EditingWindow extends React.Component {
 class Table extends React.Component {
     render() {
         if (this.props.clients.length === 0) {
-            return <p>empty</p>
+            return (
+                <div className="single-client warn">
+                    <h2>No messages have been received</h2>
+                </div>
+            )
         }
         else {
             let all_options = this.props.clients.map(c => c.client);
@@ -61,10 +111,9 @@ class Table extends React.Component {
 
 class ClientIdentifier extends React.Component {
     render() {
-        console.log(this.props.dropdown);
         return (
-            <div>
-                <p>IP: {this.props.ip} - Port: {this.props.port}</p>
+            <div className='single-client'>
+                <h2>IP: {this.props.ip} - Port: {this.props.port}</h2>
                 <ClientTable messages={this.props.messages} dropdown={this.props.dropdown} onChange={this.props.onChange}/>
             </div>
         );
@@ -73,7 +122,6 @@ class ClientIdentifier extends React.Component {
 
 class ClientTable extends React.Component {
     render() {
-        console.log(this.props);
         return (
             <table>
                 <thead>
@@ -144,3 +192,17 @@ function convertTime(t) {
 
     return formattedTime;
 }
+
+class Snackbar extends React.Component {
+    render() {
+        console.log(this.props);
+
+        return(
+            <div onAnimationEnd={this.props.callback} className={["snackbar", this.props.isActive ? "show" : ""].join(" ")}>
+                {this.props.message}
+            </div>
+        )
+    }
+}
+
+export default EditingWindow;

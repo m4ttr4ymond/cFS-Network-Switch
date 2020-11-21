@@ -1,8 +1,79 @@
-body {
+html, body {
   padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  font: 14px 'Roboto', sans-serif;
+  background-color: dimgray;
 }
 
-a {
-  color: #00B7FF;
+h1 {
+  padding-left: 20px
 }
+
+h1, h2, h3, h4, h5, h6, p, td {
+  font-weight: 100;
+}
+
+div.center {
+  display: inline-block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+div {
+  text-align: left;
+}
+
+#root {
+  text-align: center;
+}
+
+div.single-client {
+  background-color: lightgray;
+  padding: 20px;
+  margin: 20px;
+  box-shadow: 2px 2px 5px  black;
+}
+
+th, td {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+th {
+  font-weight: 400;
+}
+
+.warn {
+  background-color: #ff4336 !important;
+  color: white !important;
+}
+
+.snackbar {
+  visibility: hidden;
+  min-width: 250px;
+  margin-left: -125px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 2px;
+  padding: 16px;
+  position: fixed;
+  z-index: 1;
+  left: 50%;
+  bottom: 30px;
+  font-size: 1rem;
+}
+
+.snackbar.show {
+  visibility: visible; /* Show the snackbar */
+  /* Add animation: Take 0.5 seconds to fade in and out the snackbar. 
+ However, delay the fade out process for 2.5 seconds */
+ -webkit-animation: face 2.5s forwards;
+ animation: fade 2.5s forwards;
+}
+
+@keyframes fade {
+  0%,100% { bottom: 0px; opacity: 0 }
+  20% { bottom: 30px; opacity: 1 }
+  80% { bottom: 30px; opacity: 1 }
+}
+

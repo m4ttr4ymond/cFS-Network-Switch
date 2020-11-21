@@ -56,6 +56,11 @@ socket1.on('message', (message, rinfo) => {
     .push(datagram_contents)
     .write();
 
+  io.emit('update', {
+    client: client_id,
+    message: datagram_contents
+  });
+
 });
 
 socket2.on('message', (message, rinfo) => {
@@ -63,6 +68,7 @@ socket2.on('message', (message, rinfo) => {
 });
 
 socket1.bind(rec_orig_state);
+socket2.bind(rec_new_state);
 
 const testing_socket = dgram.createSocket('udp4');
 testing_socket.send(test.generateBuffer(), 0, 256, rec_orig_state, '0.0.0.0', () => {
@@ -111,7 +117,6 @@ io.on('connection', (socket) => {
 
   
   socket.on('send_state_init', data => {
-    console.log(data);
 
     // ToDo: not checking for the app id, but probably should
    let packet = db.get('client')
@@ -120,10 +125,12 @@ io.on('connection', (socket) => {
       .find({time_sent: data.time_sent})
       .value();
 
-    console.log(val);
+    let buffer = Buffer.from(packet.contents, 'utf8');
 
-    // testing_socket.send(data, rec_new_state, )
-    io.emit('data_initialization', db.get('client').value());
+    // todo: need to actually send the state here
+      testing_socket.send(buffer, rec_new_state, packet.ip, (err, bytes) => {
+        io.emit('state_sent', {result: err == null});
+    });
   })
 });
 
