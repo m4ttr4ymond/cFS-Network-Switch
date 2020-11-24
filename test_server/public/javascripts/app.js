@@ -42,7 +42,7 @@ class EditingWindow extends React.Component {
             this.setState({
                 client: new_client,
                 showSnackbar: this.state.showSnackbar,
-                snackbarMessage: this.state.snackbarMessage
+                snackbarMessage: this.state.snackbarMessage,
             });
         });
 

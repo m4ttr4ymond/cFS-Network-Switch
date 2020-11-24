@@ -2,9 +2,11 @@ version: "3.8"
 services:
   web:
     image: m4ttr4ymond/cfs-server
-    build: .
+    build:
+      context: .
+      network: bridge
     ports:
       - "8888:8080"
-      - "8081:8081"
+      - "8081:8081/udp"
     stdin_open: true
     tty: true
