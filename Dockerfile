@@ -4,17 +4,17 @@ RUN mkdir -p /srv/webapp
 
 WORKDIR /srv/webapp
 
-ADD ./test_server /srv/webapp
+# ADD ./test_server /srv/webapp
 
 RUN apk add npm
 
-RUN npm update
-RUN npm install
+# RUN npm update
+# RUN npm install
 
-RUN npm install pm2 -g
+# RUN npm install pm2 -g
 
 # http
 EXPOSE 8080
 EXPOSE 8081
 
-CMD pm2 --name "cFS Server" --cwd /srv/webapp start npm  -- start && pm2 log
+# CMD pm2 --name "cFS Server" --cwd /srv/webapp start npm  -- start && pm2 log

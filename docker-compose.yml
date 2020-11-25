@@ -4,9 +4,11 @@ services:
     image: m4ttr4ymond/cfs-server
     build:
       context: .
-      network: bridge
+      network: "bridge"
     ports:
       - "8888:8080"
       - "8081:8081/udp"
     stdin_open: true
     tty: true
+    volumes:
+      - "$(pwd)/test_server:/srv/web"

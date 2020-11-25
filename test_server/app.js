@@ -9,6 +9,7 @@ const FileSync = require('lowdb/adapters/FileSync')
 var router = require('./routes/index');
 var users = require('./routes/users');
 const low = require('lowdb');
+const { info } = require('console');
 // const createError = require('create-error');
 
 
@@ -20,8 +21,8 @@ db.defaults({ client: [] }).write();
 
 var app = express();
 
-const rec_orig_state = 8081
-const rec_new_state = 8082
+const rec_orig_state = 8881
+const rec_new_state = 8882
 
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
@@ -33,6 +34,8 @@ const socket2 = dgram.createSocket('udp4');
 socket1.on('message', (message, rinfo) => {
   console.log('received state');
   let data = test.extract_data(message);
+
+  console.log(rinfo);
   
   let datagram_contents = {
     ip: rinfo.address,
