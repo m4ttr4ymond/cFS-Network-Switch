@@ -21,8 +21,8 @@ db.defaults({ client: [] }).write();
 
 var app = express();
 
-const rec_orig_state = 8881
-const rec_new_state = 8882
+const rec_orig_state = 8081
+const rec_new_state = 8082
 
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
