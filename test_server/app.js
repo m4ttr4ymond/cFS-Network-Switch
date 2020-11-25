@@ -9,7 +9,7 @@ const FileSync = require('lowdb/adapters/FileSync')
 var router = require('./routes/index');
 var users = require('./routes/users');
 const low = require('lowdb');
-const createError = require('create-error');
+// const createError = require('create-error');
 
 
 // database
@@ -101,7 +101,8 @@ app.use('/users', users);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  next(createError(404));
+  console.trace("404 Error");
+  // next(createError(404));
 });
 
 // error handler
