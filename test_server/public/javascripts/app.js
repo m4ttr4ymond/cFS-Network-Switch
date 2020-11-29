@@ -11,8 +11,6 @@ class EditingWindow extends React.Component {
         };
 
         this.socket.once("data_initialization", data => {
-            console.log(data);
-
             this.setState({
                 client: data,
                 showSnackbar: false
@@ -31,6 +29,26 @@ class EditingWindow extends React.Component {
                 snackbarMessage: data.result ? 'success' : 'failure'
             });
         });
+
+        this.socket.on('deleted', data => {
+            if(data.success) {
+                let client = {};
+                for(let k in this.state.client) {
+                    if(k != data.target) {
+                        client[k] = this.state.client[k];
+                    }
+                }
+
+                this.setState({
+                    client: client,
+                    showSnackbar: this.state.showSnackbar,
+                    snackbarMessage: this.state.snackbarMessage
+                })
+            } else {
+                let vars = data.target.split("_");
+                alert(`Error deleting ${vars[0]}:${vars[1]}`);
+            }
+        });
     }
 
     newMessage(data, client_id) {
@@ -38,7 +56,6 @@ class EditingWindow extends React.Component {
         let found = false;
 
         for (let k in c) {
-            console.log(k, client_id, k == client_id);
             if (k == client_id) {
                 c[k].unshift(data);
                 found = true;
@@ -50,8 +67,6 @@ class EditingWindow extends React.Component {
             c[client_id] = [data];
         }
         
-        console.log(c);
-
         this.setState({
             client: c,
             showSnackbar: this.state.showSnackbar,
@@ -62,12 +77,10 @@ class EditingWindow extends React.Component {
 
     oldMessages(data, client_id) {
         let c = this.state.client;
-        console.log(data);
 
         data.forEach(e => {
             for (let k in this.state.client) {
                 if (k == client_id) {
-                    console.log(this.state);
                     this.state.client[k] = this.state.client[k].filter(m => m.time_sent != e.time_sent);
                     break;
                 }
@@ -99,11 +112,22 @@ class EditingWindow extends React.Component {
         }
     }
 
+    deleteAllMessages(socket, id) {
+        socket.emit('delete', id);
+    }
+
     render() {
         return (
             <div className='center'>
-                <h1>cFS Network Switch</h1>
-                <Table clients={this.state.client} onChange={(d, s, t) => this.onChange(this.socket, d, s, t)}/>
+                <div className='single-client'>
+                    <h1>cFS Network Switch</h1>
+                    <img src="images/meatball.png" alt="I'm ballin'"></img>
+                </div>
+                <Table
+                    clients={this.state.client}
+                    onChange={(d, s, t) => this.onChange(this.socket, d, s, t)}
+                    deleteFunc={id => this.deleteAllMessages(this.socket, id)}
+                />
                 <Snackbar isActive={this.state.showSnackbar} message={this.state.snackbarMessage} callback={() => this.onAnimationEnd(this)}></Snackbar>
             </div>
         );
@@ -112,7 +136,6 @@ class EditingWindow extends React.Component {
 
 class Table extends React.Component {
     render() {
-        console.log(this.props.clients)
         if (this.props.clients == null || this.props.clients == {} || Object.keys(this.props.clients).length == 0) {
             return (
                 <div className="single-client warn">
@@ -122,17 +145,15 @@ class Table extends React.Component {
         }
         else {
             let all_options = Object.keys(this.props.clients)
-            console.log(this.props.clients);
             return (
                 Object.keys(this.props.clients).map(k => {
-                    let ident = k.split("_");
                     return <ClientIdentifier
-                                ip={ident[0]}
-                                port={ident[1]}
+                                id={k}
                                 messages={this.props.clients[k]}
                                 dropdown={all_options}
                                 key={k}
                                 onChange={(dest_id, time_sent) => this.props.onChange(dest_id, k, time_sent)}
+                                deleteFunc={this.props.deleteFunc}
                             />
                 })
             );
@@ -142,15 +163,28 @@ class Table extends React.Component {
 
 class ClientIdentifier extends React.Component {
     render() {
-        console.log(this.props.messages);
+        let vals = this.props.id.split("_");
         return (
             <div className='single-client'>
-                <h2>IP: {this.props.ip} - Port: {this.props.port}</h2>
+                <h2>IP: {vals[0]} - Port: {vals[1]}</h2>
                 <div className="scroll">
                     <ClientTable messages={this.props.messages} dropdown={this.props.dropdown} onChange={this.props.onChange} />
                 </div>
+                <DeleteButton id={this.props.id} deleteFunc={this.props.deleteFunc}/>
             </div>
         );
+    }
+}
+
+class DeleteButton extends React.Component {
+    render() {
+        return (
+            <div className="align">
+                <div className="center">
+                    <button className="warn" onClick={() => this.props.deleteFunc(this.props.id)}>Delete</button>
+                </div>
+            </div>
+        )
     }
 }
 
@@ -160,8 +194,6 @@ class ClientTable extends React.Component {
             <table>
                 <thead>
                     <tr>
-                        <th>IP</th>
-                        <th>Source Port</th>
                         <th>App ID</th>
                         <th>Length</th>
                         <th>Time Sent</th>
@@ -171,7 +203,6 @@ class ClientTable extends React.Component {
                 
                 <tbody>
                     {this.props.messages.map(message => {
-                        console.log(message);
                         return <ClientRow message={message} key={message.time_sent} dropdown={this.props.dropdown} onChange={this.props.onChange}/>;
                     })}
                 </tbody>
@@ -184,8 +215,6 @@ class ClientRow extends React.Component {
     render() {
         return (
             <tr>
-                <td>{this.props.message.ip}</td>
-                <td>{this.props.message.source_port}</td>
                 <td>{this.props.message.app_id}</td>
                 <td>{this.props.message.contents.length}</td>
                 <td>{convertTime(this.props.message.time_sent)}</td>
@@ -200,7 +229,6 @@ class ClientRow extends React.Component {
 
 class DropDownSender extends React.Component {
     render() {
-        console.log(this.props.options);
         return (
             <select onChange={event => this.props.onChange(event.target.value)}>
                 <option value="">None</option>
@@ -231,8 +259,6 @@ function convertTime(t) {
 
 class Snackbar extends React.Component {
     render() {
-        console.log(this.props);
-
         return(
             <div onAnimationEnd={this.props.callback} className={["snackbar", this.props.isActive ? "show" : ""].join(" ")}>
                 {this.props.message}

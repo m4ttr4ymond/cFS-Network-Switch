@@ -5,7 +5,15 @@ html, body {
 }
 
 h1 {
-  padding-left: 20px
+  /* padding-left: 20px */
+  margin: auto;
+  display: inline-block;
+}
+
+img {
+  display: inline;
+  height: 28px;
+  vertical-align: text-bottom;
 }
 
 h1, h2, h3, h4, h5, h6, p, td {
@@ -83,4 +91,16 @@ div.scroll {
   border: 1px slategray;
   border-style: solid;
   padding: 5px;
+}
+
+button {
+  display: block;
+  margin-top: 10px;
+  border: none;
+  box-shadow: 1px 1px 2px  black;
+  cursor: pointer;
+}
+
+.align {
+  text-align: center;
 }

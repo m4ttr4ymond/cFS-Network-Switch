@@ -10,6 +10,7 @@ var router = require('./routes/index');
 var users = require('./routes/users');
 const low = require('lowdb');
 const { info } = require('console');
+const { debugPort } = require('process');
 
 const MAX_PACKAGES = 30;
 
@@ -30,12 +31,12 @@ var io = require('socket.io')(server);
 
 // UDP socket
 const socket1 = dgram.createSocket('udp4');
-// const socket2 = dgram.createSocket('udp4');
 
 socket1.on('message', (message, rinfo) => {
-  console.log('received state');
-  let data = test.extract_data(message);
+  console.log(`received state from ${rinfo.address}:${rinfo.port}`);
 
+  let data = test.extract_data(message);
+  
   ip = rinfo.address.replaceAll(".", "․");
   
   let datagram_contents = {
@@ -61,18 +62,9 @@ socket1.on('message', (message, rinfo) => {
   messages.push(datagram_contents);
   newest = messages.slice(Math.max(messages.length - MAX_PACKAGES, 0));
   oldest = messages.slice(0,Math.max(messages.length - MAX_PACKAGES, 0));
-  
-  // console.log(newest);
-  // console.log(oldest);
 
   db.set(client_id, newest)
     .write();
-
-  console.log({
-    client_id: client_id,
-    newMessage: datagram_contents,
-    oldMessages: oldest
-  });
   
   io.emit('update', {
     client_id: client_id,
@@ -83,20 +75,9 @@ socket1.on('message', (message, rinfo) => {
   console.log('saved state to local database');
 });
 
-// socket2.on('message', (message, rinfo) => {
-//   console.log("received new state", message);
-// });
-
 socket1.bind(rec_orig_state);
-// socket2.bind(rec_new_state);
 
 const testing_socket = dgram.createSocket('udp4');
-// This is a debugging tool
-// setTimeout(() => {
-//   testing_socket.send(test.generateBuffer(), 0, 256, rec_orig_state, '0.0.0.0', () => {
-//     console.log('sent simulated message');
-//   });
-// }, 3000);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -140,7 +121,6 @@ io.on('connection', (socket) => {
 
   let data = db.cloneDeep().value();
 
-  console.log(data);
   for (let k in data) {
     data[k].reverse();
   }
@@ -161,6 +141,26 @@ io.on('connection', (socket) => {
     testing_socket.send(buffer, rec_new_state, packet.ip.replaceAll("․", "."), (err, bytes) => {
         io.emit('state_sent', {result: err == null});
     });
+  });
+
+  socket.on('delete', data => {
+    let vars = data.split("_");
+    console.log(`deleting states for ${vars[0]}:${vars[1]}`);
+
+    try {
+      db.unset(data).write();
+      socket.emit('deleted', {
+        target: data,
+        success: true
+      });
+    } catch (error) {
+      socket.emit('deleted', {
+        target: data,
+        success: false
+      });
+
+      console.trace(error);
+    }
   })
 });
 
