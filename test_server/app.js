@@ -11,6 +11,8 @@ var users = require('./routes/users');
 const low = require('lowdb');
 const { info } = require('console');
 
+const MAX_PACKAGES = 30;
+
 
 // database
 const adapter = new FileSync('db.json')
@@ -43,8 +45,6 @@ socket1.on('message', (message, rinfo) => {
     time_sent: data.date,
     contents: data.buffer.toString()
   };
-
-  // console.log(datagram_contents);
   
   let client_id = `${ip}_${rinfo.port}`;
   
@@ -59,14 +59,20 @@ socket1.on('message', (message, rinfo) => {
     .value()
 
   messages.push(datagram_contents);
-  newest = messages.slice(Math.max(messages.length - 5, 0));
-  oldest = messages.slice(0,Math.max(messages.length - 5, 0));
+  newest = messages.slice(Math.max(messages.length - MAX_PACKAGES, 0));
+  oldest = messages.slice(0,Math.max(messages.length - MAX_PACKAGES, 0));
   
   // console.log(newest);
   // console.log(oldest);
 
   db.set(client_id, newest)
     .write();
+
+  console.log({
+    client_id: client_id,
+    newMessage: datagram_contents,
+    oldMessages: oldest
+  });
   
   io.emit('update', {
     client_id: client_id,
@@ -143,8 +149,6 @@ io.on('connection', (socket) => {
   
   socket.on('send_state_init', data => {
     console.log('sending state to new client');
-
-    // console.log(data);
 
     // ToDo: not checking for the app id, but probably should
    let packet = db.get(data.source_id)

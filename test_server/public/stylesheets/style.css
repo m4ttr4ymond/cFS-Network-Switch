@@ -77,3 +77,10 @@ th {
   80% { bottom: 30px; opacity: 1 }
 }
 
+div.scroll {
+  max-height: 200px;
+  overflow: scroll;
+  border: 1px slategray;
+  border-style: solid;
+  padding: 5px;
+}

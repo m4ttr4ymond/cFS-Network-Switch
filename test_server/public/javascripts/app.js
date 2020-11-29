@@ -47,14 +47,17 @@ class EditingWindow extends React.Component {
         }
 
         if (!found) {
-            c[client_id] = [data.message];
+            c[client_id] = [data];
         }
+        
+        console.log(c);
 
         this.setState({
             client: c,
             showSnackbar: this.state.showSnackbar,
             snackbarMessage: this.state.snackbarMessage,
         });
+
     }
 
     oldMessages(data, client_id) {
@@ -109,7 +112,8 @@ class EditingWindow extends React.Component {
 
 class Table extends React.Component {
     render() {
-        if (this.props.clients == null) {
+        console.log(this.props.clients)
+        if (this.props.clients == null || this.props.clients == {} || Object.keys(this.props.clients).length == 0) {
             return (
                 <div className="single-client warn">
                     <h2>No messages have been received</h2>
@@ -118,6 +122,7 @@ class Table extends React.Component {
         }
         else {
             let all_options = Object.keys(this.props.clients)
+            console.log(this.props.clients);
             return (
                 Object.keys(this.props.clients).map(k => {
                     let ident = k.split("_");
@@ -141,7 +146,9 @@ class ClientIdentifier extends React.Component {
         return (
             <div className='single-client'>
                 <h2>IP: {this.props.ip} - Port: {this.props.port}</h2>
-                <ClientTable messages={this.props.messages} dropdown={this.props.dropdown} onChange={this.props.onChange}/>
+                <div className="scroll">
+                    <ClientTable messages={this.props.messages} dropdown={this.props.dropdown} onChange={this.props.onChange} />
+                </div>
             </div>
         );
     }
