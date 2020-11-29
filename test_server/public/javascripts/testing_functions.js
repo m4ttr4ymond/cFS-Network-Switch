@@ -14,7 +14,7 @@ const extract_data = (buffer) => {
     return {
         id: buffer.readInt16BE(0, 2),
         date: buffer.readInt32BE(2, 4),
-        buffer: buffer//.slice(5)
+        buffer: buffer
     }
 }
 

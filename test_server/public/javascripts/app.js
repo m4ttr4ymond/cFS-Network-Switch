@@ -7,11 +7,11 @@ class EditingWindow extends React.Component {
 
         this.socket = this.props.socket
         this.state = {
-            client: []
+            client: {}
         };
 
         this.socket.once("data_initialization", data => {
-            // this.setState(data);
+            console.log(data);
 
             this.setState({
                 client: data,
@@ -20,39 +20,61 @@ class EditingWindow extends React.Component {
         });
 
         this.socket.on('update', data => {
-            let new_client = this.state.client;
-            let found = false;
-
-            for (let i = 0; i < new_client.length; i++) {
-                if(new_client[i].client == data.client) {
-                    new_client[i].messages.push(data.message);
-                    found = true;
-                    break;
-                }
-            }
-
-            if(!found) {
-                new_client.push({
-                    client: data.client,
-                    messages: [
-                        data.message
-                    ]
-                });
-            }
-            this.setState({
-                client: new_client,
-                showSnackbar: this.state.showSnackbar,
-                snackbarMessage: this.state.snackbarMessage,
-            });
+            this.newMessage(data.newMessage, data.client_id);
+            this.oldMessages(data.oldMessages, data.client_id);            
         });
 
         this.socket.on('state_sent', data => {
-            console.log('here');
             this.setState({
                 client: this.state.client,
                 showSnackbar: true,
                 snackbarMessage: data.result ? 'success' : 'failure'
             });
+        });
+    }
+
+    newMessage(data, client_id) {
+        let c = this.state.client;
+        let found = false;
+
+        for (let k in c) {
+            console.log(k, client_id, k == client_id);
+            if (k == client_id) {
+                c[k].unshift(data);
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            c[client_id] = [data.message];
+        }
+
+        this.setState({
+            client: c,
+            showSnackbar: this.state.showSnackbar,
+            snackbarMessage: this.state.snackbarMessage,
+        });
+    }
+
+    oldMessages(data, client_id) {
+        let c = this.state.client;
+        console.log(data);
+
+        data.forEach(e => {
+            for (let k in this.state.client) {
+                if (k == client_id) {
+                    console.log(this.state);
+                    this.state.client[k] = this.state.client[k].filter(m => m.time_sent != e.time_sent);
+                    break;
+                }
+            }
+        });
+
+        this.setState({
+            client: c,
+            showSnackbar: this.state.showSnackbar,
+            snackbarMessage: this.state.snackbarMessage,
         });
     }
 
@@ -65,8 +87,6 @@ class EditingWindow extends React.Component {
     }
 
     onChange(socket, dest_id, source_id, time_sent) {
-        
-
         if(dest_id.toLowerCase() != 'none') {
             socket.emit('send_state_init', {
                 dest_id: dest_id,
@@ -89,7 +109,7 @@ class EditingWindow extends React.Component {
 
 class Table extends React.Component {
     render() {
-        if (this.props.clients.length === 0) {
+        if (this.props.clients == null) {
             return (
                 <div className="single-client warn">
                     <h2>No messages have been received</h2>
@@ -97,12 +117,18 @@ class Table extends React.Component {
             )
         }
         else {
-            let all_options = this.props.clients.map(c => c.client);
+            let all_options = Object.keys(this.props.clients)
             return (
-                this.props.clients.map(obj => {
-                    let ident = obj.client.split("_");
-                    return <ClientIdentifier ip={ident[0]} port={ident[1]} messages={obj.messages} dropdown={all_options} key={obj.client}
-                        onChange={(dest_id, time_sent) => this.props.onChange(dest_id, obj.client, time_sent)}/>
+                Object.keys(this.props.clients).map(k => {
+                    let ident = k.split("_");
+                    return <ClientIdentifier
+                                ip={ident[0]}
+                                port={ident[1]}
+                                messages={this.props.clients[k]}
+                                dropdown={all_options}
+                                key={k}
+                                onChange={(dest_id, time_sent) => this.props.onChange(dest_id, k, time_sent)}
+                            />
                 })
             );
         }
@@ -111,6 +137,7 @@ class Table extends React.Component {
 
 class ClientIdentifier extends React.Component {
     render() {
+        console.log(this.props.messages);
         return (
             <div className='single-client'>
                 <h2>IP: {this.props.ip} - Port: {this.props.port}</h2>
@@ -137,6 +164,7 @@ class ClientTable extends React.Component {
                 
                 <tbody>
                     {this.props.messages.map(message => {
+                        console.log(message);
                         return <ClientRow message={message} key={message.time_sent} dropdown={this.props.dropdown} onChange={this.props.onChange}/>;
                     })}
                 </tbody>
@@ -165,6 +193,7 @@ class ClientRow extends React.Component {
 
 class DropDownSender extends React.Component {
     render() {
+        console.log(this.props.options);
         return (
             <select onChange={event => this.props.onChange(event.target.value)}>
                 <option value="">None</option>
