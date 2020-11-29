@@ -15,10 +15,15 @@ const { debugPort } = require('process');
 const MAX_PACKAGES = 30;
 
 
-// database
-const adapter = new FileSync('db.json')
-const db = low(adapter)
-db.defaults({}).write();
+// state database
+const state_adapter = new FileSync('state_db.json')
+const state_db = low(state_adapter)
+state_db.defaults({}).write();
+
+// app database
+const app_adapter = new FileSync('app_db.json')
+const app_db = low(app_adapter)
+app_db.defaults({apps: []}).write();
 
 
 var app = express();
@@ -49,21 +54,21 @@ socket1.on('message', (message, rinfo) => {
   
   let client_id = `${ip}_${rinfo.port}`;
   
-  let user_exists = db.get(client_id).value() != undefined;
+  let user_exists = state_db.get(client_id).value() != undefined;
 
   if (!user_exists) {
-    db.set(client_id, [])
+    state_db.set(client_id, [])
     .write();
   };
 
-  let messages = db.get(client_id)
+  let messages = state_db.get(client_id)
     .value()
 
   messages.push(datagram_contents);
   newest = messages.slice(Math.max(messages.length - MAX_PACKAGES, 0));
   oldest = messages.slice(0,Math.max(messages.length - MAX_PACKAGES, 0));
 
-  db.set(client_id, newest)
+  state_db.set(client_id, newest)
     .write();
   
   io.emit('update', {
@@ -119,7 +124,16 @@ app.use(function(err, req, res, next) {
 io.on('connection', (socket) => {
   console.log('a user connected');
 
-  let data = db.cloneDeep().value();
+  let apps = app_db.get('apps').value();
+  apps.sort((a, b) => {
+    return a.id > b.id ? 1 : (a.id < b.id ? -1 : 0);
+  });
+
+  io.emit('load_apps', apps);
+
+  // Send state data
+
+  let data = state_db.cloneDeep().value();
 
   for (let k in data) {
     data[k].reverse();
@@ -131,7 +145,7 @@ io.on('connection', (socket) => {
     console.log('sending state to new client');
 
     // ToDo: not checking for the app id, but probably should
-   let packet = db.get(data.source_id)
+   let packet = state_db.get(data.source_id)
       .find({time_sent: data.time_sent})
       .value();
 
@@ -148,7 +162,7 @@ io.on('connection', (socket) => {
     console.log(`deleting states for ${vars[0]}:${vars[1]}`);
 
     try {
-      db.unset(data).write();
+      state_db.unset(data).write();
       socket.emit('deleted', {
         target: data,
         success: true

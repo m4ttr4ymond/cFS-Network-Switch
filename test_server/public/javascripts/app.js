@@ -1,3 +1,4 @@
+import app from "../../app";
 
 class EditingWindow extends React.Component {
     socket;
@@ -13,7 +14,8 @@ class EditingWindow extends React.Component {
         this.socket.once("data_initialization", data => {
             this.setState({
                 client: data,
-                showSnackbar: false
+                showSnackbar: false,
+                apps: this.state.apps
             });
         });
 
@@ -22,11 +24,21 @@ class EditingWindow extends React.Component {
             this.oldMessages(data.oldMessages, data.client_id);            
         });
 
+        this.socket.on('load_apps', data => {
+            this.setState({
+                client: this.state.client,
+                showSnackbar: this.state.showSnackbar,
+                snackbarMessage: this.state.snackbarMessage,
+                apps: data
+            });
+        });
+
         this.socket.on('state_sent', data => {
             this.setState({
                 client: this.state.client,
                 showSnackbar: true,
-                snackbarMessage: data.result ? 'success' : 'failure'
+                snackbarMessage: data.result ? 'success' : 'failure',
+                apps: this.state.apps,
             });
         });
 
@@ -42,7 +54,8 @@ class EditingWindow extends React.Component {
                 this.setState({
                     client: client,
                     showSnackbar: this.state.showSnackbar,
-                    snackbarMessage: this.state.snackbarMessage
+                    snackbarMessage: this.state.snackbarMessage,
+                    apps: this.state.apps,
                 })
             } else {
                 let vars = data.target.split("_");
@@ -71,6 +84,7 @@ class EditingWindow extends React.Component {
             client: c,
             showSnackbar: this.state.showSnackbar,
             snackbarMessage: this.state.snackbarMessage,
+            apps: this.state.apps,
         });
 
     }
@@ -91,6 +105,7 @@ class EditingWindow extends React.Component {
             client: c,
             showSnackbar: this.state.showSnackbar,
             snackbarMessage: this.state.snackbarMessage,
+            apps: this.state.apps,
         });
     }
 
@@ -98,7 +113,8 @@ class EditingWindow extends React.Component {
         target.setState({
             client: this.state.client,
             showSnackbar: false,
-            snackbarMessage: this.state.snackbarMessage
+            snackbarMessage: this.state.snackbarMessage,
+            apps: this.state.apps,
         });
     }
 
@@ -128,8 +144,58 @@ class EditingWindow extends React.Component {
                     onChange={(d, s, t) => this.onChange(this.socket, d, s, t)}
                     deleteFunc={id => this.deleteAllMessages(this.socket, id)}
                 />
+                <div className='single-client'>
+                    <h1>cFS App Database</h1>
+                </div>
+                <NetworkTable apps={this.state.apps}/>
                 <Snackbar isActive={this.state.showSnackbar} message={this.state.snackbarMessage} callback={() => this.onAnimationEnd(this)}></Snackbar>
             </div>
+        );
+    }
+}
+
+class NetworkTable extends React.Component {
+    render() {
+        if (this.props.apps == undefined || this.props.apps.length == 0) {
+            return (
+                <div className="single-client warn">
+                    <h2>There are no apps in the database</h2>
+                </div>
+            )
+        }
+        else {
+            return (
+                <div className='single-client'>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>App Name</th>
+                                <th>App ID</th>
+                                <th>Associated File</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {this.props.apps.map(app => {
+                                return <AppRow name={app.name} id={app.id} file={app.file} key={app.id} />;
+                            })}
+                        </tbody>
+
+                    </table>
+                </div>
+            );
+        }
+    }
+}
+
+class AppRow extends React.Component {
+    render() {
+        return (
+            <tr>
+                <td>{this.props.name}</td>
+                <td>{this.props.id}</td>
+                <td>{this.props.file}</td>
+            </tr>
         );
     }
 }
@@ -230,7 +296,10 @@ class ClientRow extends React.Component {
 class DropDownSender extends React.Component {
     render() {
         return (
-            <select onChange={event => this.props.onChange(event.target.value)}>
+            <select onChange={event => {
+                this.props.onChange(event.target.value);
+                event.target.selectedIndex = 0;
+            }}>
                 <option value="">None</option>
                 {this.props.options.map(o =>
                     <option value={o} key={o}>{o.replace("_", ", ")}</option>
