@@ -46,7 +46,7 @@ socket1.on('message', (message, rinfo) => {
 
   let data = test.extract_data(message);
   
-  ip = rinfo.address.replaceAll(".", "․");
+  ip = rinfo.address.replace(/\./g, "․");
   
   let datagram_contents = {
     ip: ip,
@@ -158,7 +158,7 @@ io.on('connection', (socket) => {
 
     let buffer = test.addIdentifier(Buffer.from(packet.contents, 'utf8'), 2);
 
-    ip = packet.ip.replaceAll("․", ".");
+    ip = packet.ip.replace(/․/g, ".");
 
     // todo: need to actually send the state here
     testing_socket.send(buffer, rec_new_state, ip, (err, bytes) => {
