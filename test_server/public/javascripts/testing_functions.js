@@ -1,4 +1,5 @@
 const fs = require('fs');
+var path = require('path');
 
 const testing = () => {
     let buffer = generateBuffer();
@@ -31,6 +32,26 @@ const generateBuffer = (testingID = 1, testingTimeStamp = Math.floor(Date.now() 
     return buffer
 }
 
+const readFile = (filename, header) => {
+    pathname = path.join(__dirname, "../files", filename);
+    contents = fs.readFileSync(pathname);
+    return addIdentifier(contents, header)
+}
+
+const addIdentifier = (contents, header) => {
+    combined = Buffer.alloc(contents.length + 1);
+
+    combined.writeUInt8(header, 0);
+
+    for (let i = 0; i < contents.length; i++) {
+        combined.writeUInt8(contents[i], i + 1);
+    }
+
+    return combined;
+}
+
 exports.testing = testing;
 exports.extract_data = extract_data;
 exports.generateBuffer = generateBuffer;
+exports.readFile = readFile;
+exports.addIdentifier = addIdentifier;

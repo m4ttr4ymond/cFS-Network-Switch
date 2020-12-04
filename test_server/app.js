@@ -11,17 +11,21 @@ var users = require('./routes/users');
 const low = require('lowdb');
 const { info } = require('console');
 const { debugPort } = require('process');
+const fs = require('fs');
+const { promisify } = require('util');
+const { resolve } = require('path');
+
 
 const MAX_PACKAGES = 30;
 
 
 // state database
-const state_adapter = new FileSync('state_db.json')
+const state_adapter = new FileSync('./database/state_db.json')
 const state_db = low(state_adapter)
 state_db.defaults({}).write();
 
 // app database
-const app_adapter = new FileSync('app_db.json')
+const app_adapter = new FileSync('./database/app_db.json')
 const app_db = low(app_adapter)
 app_db.defaults({apps: []}).write();
 
@@ -144,16 +148,40 @@ io.on('connection', (socket) => {
   socket.on('send_state_init', data => {
     console.log('sending state to new client');
 
-    // ToDo: not checking for the app id, but probably should
-   let packet = state_db.get(data.source_id)
-      .find({time_sent: data.time_sent})
-      .value();
+    schedule_table = test.readFile("schedule_table", 0);
+    cfs_app = test.readFile("cfs_app", 1);
 
-    let buffer = Buffer.from(packet.contents, 'utf8');
+    // ToDo: not checking for the app id, but probably should
+    let packet = state_db.get(data.source_id)
+        .find({time_sent: data.time_sent})
+        .value();
+
+    let buffer = test.addIdentifier(Buffer.from(packet.contents, 'utf8'), 2);
+
+    ip = packet.ip.replaceAll("․", ".");
 
     // todo: need to actually send the state here
-    testing_socket.send(buffer, rec_new_state, packet.ip.replaceAll("․", "."), (err, bytes) => {
-        io.emit('state_sent', {result: err == null});
+    testing_socket.send(buffer, rec_new_state, ip, (err, bytes) => {
+      if(err == null) {
+        testing_socket.send(schedule_table, rec_new_state, ip, (err, bytes) => {
+          if (err == null) {
+            testing_socket.send(cfs_app, rec_new_state, ip, (err, bytes) => {
+              if (err == null) {
+                io.emit('state_sent', { result: err == null });
+              }
+              else {
+                io.emit('state_sent', { result: true });
+              }
+            });
+          }
+          else {
+            io.emit('state_sent', { result: true });
+          }
+        });
+      }
+      else {
+        io.emit('state_sent', { result: true });
+      }
     });
   });
 
