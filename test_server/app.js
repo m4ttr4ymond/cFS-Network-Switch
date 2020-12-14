@@ -45,6 +45,8 @@ socket1.on('message', (message, rinfo) => {
   console.log(`received state from ${rinfo.address}:${rinfo.port}`);
 
   let data = test.extract_data(message);
+
+  console.log(data);
   
   ip = rinfo.address.replace(/\./g, "․");
   
@@ -55,6 +57,9 @@ socket1.on('message', (message, rinfo) => {
     time_sent: data.date,
     contents: data.buffer.toString()
   };
+
+  console.log(datagram_contents.app_id.toString(16));
+  console.log(datagram_contents.time_sent.toString(16));
   
   let client_id = `${ip}_${rinfo.port}`;
   
@@ -148,15 +153,15 @@ io.on('connection', (socket) => {
   socket.on('send_state_init', data => {
     console.log('sending state to new client');
 
-    schedule_table = test.readFile("schedule_table", 0);
-    cfs_app = test.readFile("cfs_app", 1);
+    schedule_table = test.readFile("schedule_table", 2);
+    cfs_app = test.readFile("cfs_app", 3);
 
     // ToDo: not checking for the app id, but probably should
     let packet = state_db.get(data.source_id)
         .find({time_sent: data.time_sent})
         .value();
 
-    let buffer = test.addIdentifier(Buffer.from(packet.contents, 'utf8'), 2);
+    let buffer = test.addIdentifier(Buffer.from(packet.contents, 'utf8'), 1);
 
     ip = packet.ip.replace(/․/g, ".");
 
