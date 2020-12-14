@@ -42,7 +42,7 @@ const addIdentifier = (contents, header) => {
     combined = Buffer.alloc(contents.length + 3);
 
     combined.writeUInt8(header, 0);
-    combined.writeUInt16(contents.length, 1);
+    combined.writeUInt16BE(contents.length, 1);
 
     for (let i = 0; i < contents.length; i++) {
         combined.writeUInt8(contents[i], i + 1);
