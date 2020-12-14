@@ -13,8 +13,8 @@ const testing = () => {
 
 const extract_data = (buffer) => {
     return {
-        id: buffer.readInt16BE(0, 2),
-        date: buffer.readInt32BE(2, 4),
+        date: buffer.readInt32BE(0, 4),
+        id: buffer.readInt16BE(4, 2),
         buffer: buffer
     }
 }
