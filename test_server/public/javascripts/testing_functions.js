@@ -45,7 +45,7 @@ const addIdentifier = (contents, header) => {
     combined.writeUInt16BE(contents.length, 1);
 
     for (let i = 0; i < contents.length; i++) {
-        combined.writeUInt8(contents[i], i + 1);
+        combined.writeUInt8(contents[i], i + 3);
     }
 
     return combined;
