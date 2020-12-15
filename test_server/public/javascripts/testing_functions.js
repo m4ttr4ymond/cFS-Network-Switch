@@ -38,14 +38,17 @@ const readFile = (filename, header) => {
     return addIdentifier(contents, header)
 }
 
-const addIdentifier = (contents, header) => {
-    combined = Buffer.alloc(contents.length + 3);
+const addIdentifier = (contents, header, add_len = true) => {
+    var offset = 1 + add_len*2;
 
+    combined = Buffer.alloc(contents.length + offset);
     combined.writeUInt8(header, 0);
-    combined.writeUInt16BE(contents.length, 1);
+
+    if(add_len)
+        combined.writeUInt16BE(contents.length, 1);
 
     for (let i = 0; i < contents.length; i++) {
-        combined.writeUInt8(contents[i], i + 3);
+        combined.writeUInt8(contents[i], i + offset);
     }
 
     return combined;

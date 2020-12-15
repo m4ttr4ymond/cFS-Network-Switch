@@ -161,7 +161,7 @@ io.on('connection', (socket) => {
         .find({time_sent: data.time_sent})
         .value();
 
-    let buffer = test.addIdentifier(Buffer.from(packet.contents, 'utf8'), 1);
+    let buffer = test.addIdentifier(Buffer.from(packet.contents, 'utf8'), 1, false);
 
     ip = packet.ip.replace(/․/g, ".");
 
