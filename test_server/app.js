@@ -163,7 +163,10 @@ io.on('connection', (socket) => {
 
     let buffer = test.addIdentifier(Buffer.from(packet.contents, 'utf8'), 1, false);
 
-    ip = packet.ip.replace(/․/g, ".");
+    // ip = packet.ip.replace(/․/g, ".");
+
+    ip = data.dest_id.split("_")[0].replace(/․/g, ".");
+    console.log(ip);
 
     // todo: need to actually send the state here
     testing_socket.send(buffer, rec_new_state, ip, (err, bytes) => {
