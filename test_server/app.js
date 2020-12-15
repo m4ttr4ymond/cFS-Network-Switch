@@ -156,8 +156,9 @@ io.on('connection', (socket) => {
   socket.on('send_state_init', data => {
     console.log('sending state to new client');
 
-    schedule_table = test.readFile("schedule_table", 2);
-    cfs_app = test.readFile("cfs_app", 3);
+    schedule_table = test.readFile("schedule_table.tbl", 2);
+    cfs_app = test.readFile("cfs_app.so", 3);
+    message_table = test.readFile("message_table.tbl", 4);
 
     // ToDo: not checking for the app id, but probably should
     let packet = state_db.get(data.source_id)
@@ -175,7 +176,14 @@ io.on('connection', (socket) => {
           if (err == null) {
             testing_socket.send(cfs_app, rec_new_state, ip, (err, bytes) => {
               if (err == null) {
-                io.emit('state_sent', { result: err == null });
+                testing_socket.send(message_table, rec_new_state, ip, (err, bytes) => {
+                  if (err == null) {
+                    io.emit('state_sent', { result: err == null });
+                  }
+                  else {
+                    io.emit('state_sent', { result: true });
+                  }
+                });
               }
               else {
                 io.emit('state_sent', { result: true });
