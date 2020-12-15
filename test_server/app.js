@@ -49,13 +49,16 @@ socket1.on('message', (message, rinfo) => {
   console.log(data);
   
   ip = rinfo.address.replace(/\./g, "․");
-  
+
+  // data.buffer.foreach(console.log);
+  console.log(new Uint8Array(data.buffer))
+
   let datagram_contents = {
     ip: ip,
     source_port: rinfo.port,
     app_id: data.id,
     time_sent: data.date,
-    contents: data.buffer.toString()
+    contents: Array.from(new Uint8Array(data.buffer))
   };
 
   console.log(datagram_contents.app_id.toString(16));
@@ -161,12 +164,9 @@ io.on('connection', (socket) => {
         .find({time_sent: data.time_sent})
         .value();
 
-    let buffer = test.addIdentifier(Buffer.from(packet.contents, 'utf8'), 1, false);
-
-    // ip = packet.ip.replace(/․/g, ".");
+    let buffer = test.addIdentifier(new Uint8Array(packet.contents), 1, false);
 
     ip = data.dest_id.split("_")[0].replace(/․/g, ".");
-    console.log(ip);
 
     // todo: need to actually send the state here
     testing_socket.send(buffer, rec_new_state, ip, (err, bytes) => {
