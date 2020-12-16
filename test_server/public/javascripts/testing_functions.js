@@ -3,12 +3,9 @@ var path = require('path');
 
 const testing = () => {
     let buffer = generateBuffer();
-    console.log(buffer);
 
     let id = buffer.readInt16BE(0, 2);
     let date = buffer.readInt32BE(2, 4);
-
-    console.log(id, date);
 }
 
 const extract_data = (buffer) => {

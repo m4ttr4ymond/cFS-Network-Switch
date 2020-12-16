@@ -46,13 +46,8 @@ socket1.on('message', (message, rinfo) => {
   console.log(`received state from ${rinfo.address}:${rinfo.port}`);
 
   let data = test.extract_data(message);
-
-  console.log(data);
   
   ip = rinfo.address.replace(/\./g, "․");
-
-  // data.buffer.foreach(console.log);
-  console.log(new Uint8Array(data.buffer))
 
   let datagram_contents = {
     ip: ip,
@@ -61,9 +56,6 @@ socket1.on('message', (message, rinfo) => {
     time_sent: data.date,
     contents: Array.from(new Uint8Array(data.buffer))
   };
-
-  console.log(datagram_contents.app_id.toString(16));
-  console.log(datagram_contents.time_sent.toString(16));
   
   let client_id = `${ip}_${rinfo.port}`;
   
@@ -169,6 +161,7 @@ io.on('connection', (socket) => {
     var prepended = test.prepend_data(new Uint8Array(packet.contents));
 
     let buffer = test.addIdentifier(prepended, 1);
+    console.log(buffer);
 
     ip = data.dest_id.split("_")[0].replace(/․/g, ".");
 
