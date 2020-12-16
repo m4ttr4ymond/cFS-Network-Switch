@@ -49,8 +49,40 @@ const addIdentifier = (contents, header) => {
     return combined;
 }
 
+const prepend_data = (contents) => {
+    var application = "SAMPLE_APP";
+    var app_name_len = application.length; // byte
+    var entrypoint = "SAMPLE_AppMain";
+    var entrypoint_len = entrypoint.length; // byte
+    var stacksize = 16384; //uint32
+    var priority = 50; // uint16
+
+    combined = Buffer.alloc(contents.length + 8 + app_name_len + entrypoint_len);
+    combined.writeUInt8(app_name_len, 0);
+    
+    for(var i = 0; i < app_name_len; ++i){
+        combined.writeUInt8(application.charCodeAt(i), i+1);
+    }
+
+    combined.writeUInt8(entrypoint_len, 1 + app_name_len);
+
+    for (var i = 0; i < entrypoint_len; ++i) {
+        combined.writeUInt8(entrypoint.charCodeAt(i), i + 2 + app_name_len);
+    }
+
+    combined.writeUInt32BE(stacksize, 2 + app_name_len + entrypoint_len);
+    combined.writeUInt16BE(priority, 6 + app_name_len + entrypoint_len);
+
+    for (var i = 0; i < contents.length; ++i) {
+        combined.writeUInt8(contents[i], i + 8 + app_name_len + entrypoint_len);
+    }
+
+    return combined;
+}
+
 exports.testing = testing;
 exports.extract_data = extract_data;
 exports.generateBuffer = generateBuffer;
 exports.readFile = readFile;
 exports.addIdentifier = addIdentifier;
+exports.prepend_data = prepend_data;

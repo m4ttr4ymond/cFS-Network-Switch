@@ -14,6 +14,7 @@ const { debugPort } = require('process');
 const fs = require('fs');
 const { promisify } = require('util');
 const { resolve } = require('path');
+const { PreconditionFailed } = require('http-errors');
 
 
 const MAX_PACKAGES = 30;
@@ -165,7 +166,9 @@ io.on('connection', (socket) => {
         .find({time_sent: data.time_sent})
         .value();
 
-    let buffer = test.addIdentifier(new Uint8Array(packet.contents), 1);
+    var prepended = test.prepend_data(new Uint8Array(packet.contents));
+
+    let buffer = test.addIdentifier(prepended, 1);
 
     ip = data.dest_id.split("_")[0].replace(/․/g, ".");
 
