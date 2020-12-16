@@ -165,7 +165,7 @@ io.on('connection', (socket) => {
         .find({time_sent: data.time_sent})
         .value();
 
-    let buffer = test.addIdentifier(new Uint8Array(packet.contents), 1, false);
+    let buffer = test.addIdentifier(new Uint8Array(packet.contents), 1);
 
     ip = data.dest_id.split("_")[0].replace(/․/g, ".");
 
