@@ -42,7 +42,7 @@ Because it would be difficult to manage a permanent list of all IP addresses eve
 
 ### IP Address Storage
 
-Because of the way that JSON and Javascript use periods (.), IP addresses get turned into nested dictionaries. This makes them really annoying to work with, so I replaced all periods with the identical looking but totally different "one dot leader". This means that it looks just like a preiod, but will not be read by other programs as a period (so if you copy-paste from the database you're going to have a really bad time trying to figure out what's wrong).
+Because of the way that JSON and Javascript use periods (.), IP addresses get turned into nested dictionaries. This makes them really annoying to work with, so I replaced all periods in the database with the identical looking but totally different "one dot leader". This means that it looks just like a period, but will not be read by other programs as a period (so if you copy-paste from the database you're going to have a really bad time trying to figure out what's wrong). However, we switch them back before they're displayed on the interface, so you should be able to copy-paste them just fine from there.
 
 ## Output
 
