@@ -2,9 +2,11 @@
 
 ## Purpose
 
-The purpose of the Network Switch Simulator is to create an easy method of interacting with datagrams to simulate the actions of a network switch. As a result, it stores a limited amount of state data for various applications, and allows users to send that data to given IPs at any point.
+The purpose of the Network Switch Simulator is to create an easy method of interacting with datagrams, and to simulate the actions of a cFS network switch. As a result, it stores a limited amount of state data for various applications, and allows users to send that data to given IPs at any point in time.
 
 ## Setup
+
+Before you start, make sure that you already have NodeJS and NPM installed. Next, clone the cFS network switch repo, `cd` into the main directory, and use the command `npm install	`. This will install all of the required packages. Next, type `npm start` and the server will start.
 
 ## Implementation
 
@@ -20,7 +22,7 @@ The web interface is available on port 8080 of the machine that it's being run o
 
 ![overview](./documentation_media/overview.png)
 
-The interface for the simulator was intended to be as simple as possible while still providing reasonable debugging tools. As a result, it implements a simple card view, where each client application (IP address and port number combination) has its own card and tracks its own state. In each card, we keep track of the send app ID, the length of the datagram received, and the time that the datagram was sent (according to metadata included in the datagram along with the state). Each card also has a dropdown that users can use to send a state to a specific IP address. If the states in the card are no longer needed, the user can delete the states with a button at the bottom.
+The interface for the simulator was intended to be as simple as possible while still providing reasonable debugging tools. As a result, it implements a simple card view, where each client application (IP address and port number combination) has its own card and tracks its own state. In each card, we keep track of the sent app ID, the length of the datagram received, and the time that the datagram was sent (according to metadata included in the datagram along with the state). Each card also has a dropdown that users can use to send a state to a specific IP address. If the states in the card are no longer needed, the user can delete the states with a button at the bottom.
 
 ## Limitations
 
@@ -38,26 +40,26 @@ Because it would take significant effort to implement a database of app IDs, and
 
 ### IP Addresses
 
-Because it would be difficult to manage a permanent list of all IP addresses ever received (since it would require extra delete buttons to remove them), the only IP addresses that are saved are IPs that are associated with a state that is currently saved in the simulator. When a state is received from a new IP address, that IP address is now available to send to. When all of the packets from a given IP address are deleted, it is no longer possible to send to that IP address.
+Because it would be difficult to manage a permanent list of all IP addresses ever received (since it would require extra management options and display windows), the only IP addresses that are saved are IPs that are associated with a state that is currently saved in the simulator. When a state is received from a new IP address, that IP address becomes a potential recipient. When all of the packets from a given IP address are deleted, it is no longer possible to send to that IP address.
 
 ### IP Address Storage
 
-Because of the way that JSON and Javascript use periods (.), IP addresses get turned into nested dictionaries. This makes them really annoying to work with, so I replaced all periods in the database with the identical looking but totally different "one dot leader". This means that it looks just like a period, but will not be read by other programs as a period (so if you copy-paste from the database you're going to have a really bad time trying to figure out what's wrong). However, we switch them back before they're displayed on the interface, so you should be able to copy-paste them just fine from there.
+Because of the way that JSON and Javascript use periods (.), IP addresses get turned into nested dictionaries. This makes them really annoying to work with, so I replaced all periods in the database with the identical looking but totally different "one dot leader". This means that it looks just like a period, but will not be read by other programs as a period (so if you copy-paste from the `json` database you're going to have a really bad time trying to figure out what's wrong). However, we switch them back before they're displayed on the interface, so you should be able to copy-paste them just fine from there.
 
 ## Output
 
 ### State
 
-| Data                                         | Size                         |
-| -------------------------------------------- | ---------------------------- |
-| Packet ID (1)                                | 1 byte                       |
-| Length of app name                           | 1 byte                       |
-| App name (null-terminated char array)        | Variable                     |
-| Length of app entry point                    | 1 byte                       |
-| App entry point (null-terminated char array) | Variable                     |
-| Stack size                                   | 4 bytes                      |
-| Priority                                     | 2 bytes                      |
-| State                                        | Variable (length calculated) |
+| Data                                               | Size                         |
+| -------------------------------------------------- | ---------------------------- |
+| Packet ID (1)                                      | 1 byte                       |
+| Length of app name                                 | 1 byte                       |
+| App name (null-terminated char array)              | Variable                     |
+| Length of app entry point                          | 1 byte                       |
+| App entry point (*not* null-terminated char array) | Variable                     |
+| Stack size                                         | 4 bytes                      |
+| Priority                                           | 2 bytes                      |
+| State                                              | Variable (length calculated) |
 
 ### Table and so Files
 
