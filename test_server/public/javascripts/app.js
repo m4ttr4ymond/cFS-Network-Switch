@@ -196,7 +196,7 @@ class ClientIdentifier extends React.Component {
         let vals = this.props.id.split("_");
         return (
             <div className='single-client'>
-                <h2>IP: {vals[0]} - Port: {vals[1]}</h2>
+                <h2>IP: {vals[0].replace(/․/g, ".")} - Port: {vals[1]}</h2>
                 <div className="scroll">
                     <ClientTable messages={this.props.messages} dropdown={this.props.dropdown} onChange={this.props.onChange} />
                 </div>

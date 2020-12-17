@@ -40,6 +40,10 @@ Because it would take significant effort to implement a database of app IDs, and
 
 Because it would be difficult to manage a permanent list of all IP addresses ever received (since it would require extra delete buttons to remove them), the only IP addresses that are saved are IPs that are associated with a state that is currently saved in the simulator. When a state is received from a new IP address, that IP address is now available to send to. When all of the packets from a given IP address are deleted, it is no longer possible to send to that IP address.
 
+### IP Address Storage
+
+Because of the way that JSON and Javascript use periods (.), IP addresses get turned into nested dictionaries. This makes them really annoying to work with, so I replaced all periods with the identical looking but totally different "one dot leader". This means that it looks just like a preiod, but will not be read by other programs as a period (so if you copy-paste from the database you're going to have a really bad time trying to figure out what's wrong).
+
 ## Output
 
 ### State
