@@ -121,7 +121,7 @@ class EditingWindow extends React.Component {
     onChange(socket, dest_id, source_id, time_sent) {
         if(dest_id.toLowerCase() != 'none') {
             socket.emit('send_state_init', {
-                dest_id: dest_id,
+                dest_ip: dest_id,
                 source_id: source_id,
                 time_sent: time_sent
             });
@@ -144,47 +144,9 @@ class EditingWindow extends React.Component {
                     onChange={(d, s, t) => this.onChange(this.socket, d, s, t)}
                     deleteFunc={id => this.deleteAllMessages(this.socket, id)}
                 />
-                <div className='single-client'>
-                    <h1>cFS App Database</h1>
-                </div>
-                <NetworkTable apps={this.state.apps}/>
                 <Snackbar isActive={this.state.showSnackbar} message={this.state.snackbarMessage} callback={() => this.onAnimationEnd(this)}></Snackbar>
             </div>
         );
-    }
-}
-
-class NetworkTable extends React.Component {
-    render() {
-        if (this.props.apps == undefined || this.props.apps.length == 0) {
-            return (
-                <div className="single-client warn">
-                    <h2>There are no apps in the database</h2>
-                </div>
-            )
-        }
-        else {
-            return (
-                <div className='single-client'>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>App Name</th>
-                                <th>App ID</th>
-                                <th>Associated File</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {this.props.apps.map(app => {
-                                return <AppRow name={app.name} id={app.id} file={app.file} key={app.id} />;
-                            })}
-                        </tbody>
-
-                    </table>
-                </div>
-            );
-        }
     }
 }
 
@@ -211,6 +173,8 @@ class Table extends React.Component {
         }
         else {
             let all_options = Object.keys(this.props.clients)
+            all_options = all_options.map(o => o.split("_")[0]);
+            all_options = [...new Set(all_options)]
             return (
                 Object.keys(this.props.clients).map(k => {
                     return <ClientIdentifier
@@ -302,7 +266,7 @@ class DropDownSender extends React.Component {
             }}>
                 <option value="">None</option>
                 {this.props.options.map(o =>
-                    <option value={o} key={o}>{o.replace("_", ", ")}</option>
+                    <option value={o} key={o}>{o}</option>
                 )}
             </select>
         );
