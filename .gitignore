@@ -1,3 +1,5 @@
 node_modules
-db.json
+state_db.json
 .DS_Store
+*.so
+*.tbl
